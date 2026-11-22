@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="description" content="UM Next · 本地音乐解锁：QQ 音乐 QMC / 网易云 NCM，全部在浏览器本地解密，不上传任何文件。" />
+    <!-- 内联 SVG 图标：避免任何额外网络请求 -->
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%233f63f0'/%3E%3Cpath d='M13 9.5v11.2a3.4 3.4 0 1 0 2 3.1V12.6l7-1.7v7.4a3.4 3.4 0 1 0 2 3.1V7.4z' fill='%23fff'/%3E%3C/svg%3E"
+    />
+    <title>UM Next · 音乐解锁</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <!--
+      macOS 10.14.6（最高 Safari 14.1）兼容垫片：
+      只补真正缺失的最小实现，不引入任何外部脚本。
+    -->
+    <script>
+      (function () {
+        if (!window.globalThis) window.globalThis = window;
+        if (!window.queueMicrotask) {
+          window.queueMicrotask = function (callback) {
+            Promise.resolve().then(callback);
+          };
+        }
+        if (!Object.hasOwn) {
+          Object.defineProperty(Object, 'hasOwn', {
+            value: function (object, key) {
+              return Object.prototype.hasOwnProperty.call(object, key);
+            },
+            configurable: true,
+            writable: true,
+          });
+        }
+        if (!Array.prototype.at) {
+          Object.defineProperty(Array.prototype, 'at', {
+            value: function (index) {
+              var i = Math.trunc(Number(index)) || 0;
+              if (i < 0) i += this.length;
+              return this[i];
+            },
+            configurable: true,
+            writable: true,
+          });
+        }
+        if (!String.prototype.replaceAll) {
+          Object.defineProperty(String.prototype, 'replaceAll', {
+            value: function (search, replacement) {
+              return this.split(search).join(replacement);
+            },
+            configurable: true,
+            writable: true,
+          });
+        }
+        if (!Promise.allSettled) {
+          Promise.allSettled = function (list) {
+            return Promise.all(
+              Array.prototype.map.call(list, function (item) {
+                return Promise.resolve(item).then(
+                  function (value) {
+                    return { status: 'fulfilled', value: value };
+                  },
+                  function (reason) {
+                    return { status: 'rejected', reason: reason };
+                  },
+                );
+              }),
+            );
+          };
+        }
+      })();
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

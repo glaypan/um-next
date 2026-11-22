@@ -1,0 +1,74 @@
+[
+  {
+    "file": "sample-ncm.ncm",
+    "sha256": "7bbf99bf29325a0e58b7ba308bb1aa654ae0956ede4ea8e1a7025a955cddf0cc",
+    "ext": "flac",
+    "needsEkey": false,
+    "ekeyFile": null,
+    "cipher": "NCM",
+    "fileSha256": "c6d0e9ef1a076f9008d64c428e40b54d238d47c666050e3623a9131fa4f913a7",
+    "size": 4515,
+    "plaintextSize": 4096,
+    "note": "含 metadata + 极小的假 JPEG 封面（frameLen=64）"
+  },
+  {
+    "file": "sample-qmc1.qmcflac",
+    "sha256": "7bbf99bf29325a0e58b7ba308bb1aa654ae0956ede4ea8e1a7025a955cddf0cc",
+    "ext": "flac",
+    "needsEkey": false,
+    "ekeyFile": null,
+    "cipher": "QMC1",
+    "fileSha256": "40ebe6b10f9bfd09b2cd83b405b37fcf4dc7759915aacd508037db774d97a24a",
+    "size": 4096,
+    "plaintextSize": 4096,
+    "note": "静态 128 字节密钥 XOR，无尾部"
+  },
+  {
+    "file": "sample-qmc-qtag.mgg",
+    "sha256": "7bbf99bf29325a0e58b7ba308bb1aa654ae0956ede4ea8e1a7025a955cddf0cc",
+    "ext": "flac",
+    "needsEkey": false,
+    "ekeyFile": null,
+    "cipher": "QMC2/Map",
+    "fileSha256": "e95b3f0d999746301416c43f340eafd587b7bbdad4a3fcf6f1d7ad788bf0828c",
+    "size": 4192,
+    "plaintextSize": 4096,
+    "note": "QTag 尾部内嵌 ekey，可零输入自动解密"
+  },
+  {
+    "file": "sample-qmc-musicex.mflac",
+    "sha256": "7bbf99bf29325a0e58b7ba308bb1aa654ae0956ede4ea8e1a7025a955cddf0cc",
+    "ext": "flac",
+    "needsEkey": true,
+    "ekeyFile": "sample-qmc-musicex.ekey.txt",
+    "cipher": "QMC2/Map",
+    "fileSha256": "63c7991477edcb1c110228a3d393c0b49c40a6a31d4e74fae8f3e2a85a9f1e70",
+    "size": 4288,
+    "plaintextSize": 4096,
+    "note": "MusicEx 尾部不带 ekey，必须补 ekey 或走保险库"
+  },
+  {
+    "file": "sample-qmc-stag.mgg",
+    "sha256": "7bbf99bf29325a0e58b7ba308bb1aa654ae0956ede4ea8e1a7025a955cddf0cc",
+    "ext": "flac",
+    "needsEkey": true,
+    "ekeyFile": "sample-qmc-stag.ekey.txt",
+    "cipher": "QMC2/Map",
+    "fileSha256": "bbc3f98e834193e6842424bb638a7e7aa0b08fc19e65d98e7f24c68bc25acece",
+    "size": 4128,
+    "plaintextSize": 4096,
+    "note": "STag 尾部只带 resourceId/mediaMid，必须补 ekey 或走保险库"
+  },
+  {
+    "file": "sample-plain.flac",
+    "sha256": "7bbf99bf29325a0e58b7ba308bb1aa654ae0956ede4ea8e1a7025a955cddf0cc",
+    "ext": "flac",
+    "needsEkey": false,
+    "ekeyFile": null,
+    "cipher": "AUDIO",
+    "fileSha256": "7bbf99bf29325a0e58b7ba308bb1aa654ae0956ede4ea8e1a7025a955cddf0cc",
+    "size": 4096,
+    "plaintextSize": 4096,
+    "note": "已经是明文，应原样透传"
+  }
+]

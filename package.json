@@ -1,0 +1,39 @@
+{
+  "name": "um-next",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "UM Next · 本地音乐解锁（QQ 音乐 QMC / 网易云 NCM），纯前端离线解密",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "node scripts/serve.mjs",
+    "typecheck": "tsc -b",
+    "test": "vitest run",
+    "selfcheck": "node scripts/selfcheck.mjs",
+    "samples": "node scripts/make-samples.mjs"
+  },
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "jsdom": "^25.0.1",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.7",
+    "vitest": "^3.0.5"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/glaypan/um-next.git"
+  },
+  "homepage": "https://github.com/glaypan/um-next",
+  "bugs": {
+    "url": "https://github.com/glaypan/um-next/issues"
+  }
+}
