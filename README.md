@@ -2,6 +2,8 @@
 
 纯前端、可离线运行的 QQ 音乐 / 网易云音乐格式转换工具。所有解密都在浏览器本地完成，文件与密钥不会上传到任何服务器。
 
+[![Deploy](https://github.com/glaypan/um-next/actions/workflows/deploy.yml/badge.svg)](https://github.com/glaypan/um-next/actions/workflows/deploy.yml)
+[![在线使用](https://img.shields.io/badge/demo-GitHub%20Pages-3f63f0.svg)](https://glaypan.github.io/um-next/)
 [![tests](https://img.shields.io/badge/tests-237%20passed-brightgreen.svg)](#测试)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
@@ -27,6 +29,12 @@
 - **旧设备兼容**：构建目标 Safari 12，兼容 **macOS 10.14.6**（Mojave）与 Chrome 80+；Worker 使用经典模式（Safari 15 以下不支持 module worker）。
 
 ![自动导入密钥](docs/screenshot-import.png)
+
+## 在线使用
+
+**https://glaypan.github.io/um-next/**
+
+所有解密仍在你的浏览器本地完成；GitHub Pages 只托管静态文件。
 
 ## 快速开始
 
