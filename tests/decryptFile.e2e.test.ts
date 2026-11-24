@@ -50,8 +50,8 @@ const ekeyOf = (entry: ManifestEntry): string | undefined =>
   entry.ekeyFile ? readFileSync(path.join(FIXTURE_DIR, entry.ekeyFile), 'utf8').trim() : undefined;
 
 describe('fixtures: 清单与文件完整性', () => {
-  it('manifest 恰好包含 6 个样本，且覆盖 6 种容器/算法', () => {
-    expect(manifest.length).toBe(6);
+  it('manifest 包含 7 个样本，且覆盖全部容器/算法', () => {
+    expect(manifest.length).toBe(7);
     expect(new Set(manifest.map((m) => m.cipher))).toEqual(
       new Set(['NCM', 'QMC1', 'QMC2/Map', 'AUDIO']),
     );
@@ -63,6 +63,7 @@ describe('fixtures: 清单与文件完整性', () => {
         'sample-qmc-musicex.mflac',
         'sample-qmc-qtag.mgg',
         'sample-qmc-stag.mgg',
+        'sample-qmc-ogg.mgg',
         'sample-qmc1.qmcflac',
       ].sort(),
     );
@@ -104,8 +105,10 @@ describe('fixtures: decryptFile 端到端', () => {
       expect(out.ext).toBe(entry.ext);
       expect(out.data.length, '明文长度必须与清单一致').toBe(entry.plaintextSize);
       expect(sha256(out.data), '下载得到的字节与清单 sha256 不匹配').toBe(entry.sha256);
-      // 所有样本共用同一段假音频，明文应彼此完全一致
-      expect(bytesToHex(out.data)).toBe(bytesToHex(readFixture('sample-plain.flac')));
+      // 除 OGG 样本外共用同一段假 FLAC，明文应彼此完全一致
+      if (entry.ext !== 'ogg') {
+        expect(bytesToHex(out.data)).toBe(bytesToHex(readFixture('sample-plain.flac')));
+      }
     });
   }
 

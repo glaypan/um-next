@@ -465,6 +465,12 @@ code {
   color: var(--text-muted);
 }
 
+.badge--converting {
+  background: var(--bg-subtle);
+  background: color-mix(in srgb, var(--primary) 14%, transparent);
+  color: var(--primary);
+}
+
 .badge--running {
   background: var(--bg-subtle);
   background: color-mix(in srgb, var(--primary) 14%, transparent);
@@ -623,6 +629,15 @@ code {
   outline-offset: 1px;
 }
 
+.checkbox--toolbar {
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+  font-size: 12.5px;
+  color: var(--text-muted);
+  user-select: none;
+  white-space: nowrap;
+}
+
 .checkbox {
   display: inline-flex;
   align-items: center;
@@ -731,6 +746,102 @@ code {
 }
 
 /* ---------------- 小屏适配（≤ 480px，覆盖 390×844） ---------------- */
+
+/* ---------------- 密钥说明 ---------------- */
+.link-button {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--primary);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.key-guide__tabs {
+  display: flex;
+  gap: 6px;
+  margin: 14px 0 10px;
+  flex-wrap: wrap;
+}
+
+.key-guide__tab {
+  border: 1px solid var(--border);
+  background: var(--bg-subtle);
+  color: var(--text-muted);
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.key-guide__tab--active {
+  border-color: var(--primary);
+  background: var(--bg-elevated);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.key-guide__panel {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  background: var(--bg-elevated);
+  font-size: 13.5px;
+  line-height: 1.75;
+}
+
+.key-guide__panel p {
+  margin: 0 0 8px;
+}
+
+.key-guide__list {
+  margin: 4px 0 10px;
+  padding-left: 20px;
+}
+
+.key-guide__path {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 8px 0 12px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+}
+
+.key-guide__path code,
+.key-guide__path pre {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  word-break: break-all;
+  white-space: pre-wrap;
+  min-width: 0;
+}
+
+.key-guide__hint {
+  color: var(--text-muted);
+  font-size: 12.5px;
+}
+
+.key-guide__footer {
+  margin-top: 14px;
+}
+
+.key-guide__footer .modal__actions {
+  margin-top: 8px;
+}
+
+@media (max-width: 480px) {
+  .key-guide__path {
+    flex-direction: column;
+  }
+}
+
 /* 目录扫描导入 */
 .folder-import__input {
   position: absolute;

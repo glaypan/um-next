@@ -4,7 +4,7 @@
 
 [![Deploy](https://github.com/glaypan/um-next/actions/workflows/deploy.yml/badge.svg)](https://github.com/glaypan/um-next/actions/workflows/deploy.yml)
 [![在线使用](https://img.shields.io/badge/demo-GitHub%20Pages-3f63f0.svg)](https://glaypan.github.io/um-next/)
-[![tests](https://img.shields.io/badge/tests-237%20passed-brightgreen.svg)](#测试)
+[![tests](https://img.shields.io/badge/tests-242%20passed-brightgreen.svg)](#测试)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 ![队列界面](docs/screenshot-queue.png)
@@ -24,11 +24,15 @@
 
 - **ekey 保险库**：粘贴一次，按 `media_filename` → `mid` → 本地文件名逐级匹配；支持批量导入 `标识,ekey`、导出 JSON、一键清空。
 - **从文件夹自动导入密钥**：选择一个本地目录（如 QQ 音乐数据目录），自动提取候选、用 tc_tea 自证、再用「能否解开目标文件头」配对；匹配成功才写入保险库并自动重排解密。
+- **OGG 自动转 MP3**：`.ogg / .qmcogg / .mgg` 解密后可在 Worker 内用 libvorbis(WASM) 解码 + LAME 编码为 320 kbps MP3；顶栏开关可关闭，转换失败自动保留 OGG。
+- **内置密钥说明**：Windows / macOS / Android / iOS 四个平台的密钥库路径、ADB 命令、19.51 与 8.8.0 降级下载地址，全部来自 um-react v0.5.0 的公开说明，并可一键复制。
 - **批量队列**：进度、取消、重试、单个/全部下载，输出命名 `歌手 - 标题.ext`，封面可单独导出。
-- **纯本地**：0 外部请求、不写 cookie、无 `eval`；Worker 分块解密，主线程不卡顿。
+- **纯本地**：0 外部请求、不写 cookie、无 `eval`；解密 / 扫描 / 转码各自独立 Worker，主线程不卡顿。
 - **旧设备兼容**：构建目标 Safari 12，兼容 **macOS 10.14.6**（Mojave）与 Chrome 80+；Worker 使用经典模式（Safari 15 以下不支持 module worker）。
 
 ![自动导入密钥](docs/screenshot-import.png)
+
+![密钥使用说明](docs/screenshot-key-guide.png)
 
 ## 在线使用
 
@@ -74,13 +78,14 @@ npm run preview    # 本地静态预览（零依赖服务器）
   - `ncm/`：NCM 头、AES-128-ECB 密钥与元数据、封面、音频流
   - `tea.ts` / `aes128.ts`：腾讯 TEA 与 AES 的纯 TS 实现（浏览器 WebCrypto 不支持 ECB）
   - `ekeyScan.ts`：目录扫描的候选提取、算法自证与文件头配对
-- `src/worker/`：解密与扫描两个 Worker，4 MiB 分块 + 进度节流
+  - `transcode.ts`：Ogg Vorbis → MP3（libvorbis WASM 流式解码 + LAME 分块编码）
+- `src/worker/`：解密 / 扫描 / 转码三个 Worker，分块与进度节流
 - `src/ui/`：React 19 + 手写 CSS，无 UI 框架、无外部字体
 
 ## 测试
 
 ```bash
-npm test           # vitest：237 个用例
+npm test           # vitest：242 个用例
 npm run selfcheck  # 内核自检：122 项断言（含上游公开测试向量）
 npm run samples    # 生成 6 个合成样本到 .tmp/samples/
 ```

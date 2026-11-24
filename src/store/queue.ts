@@ -1,7 +1,7 @@
 /** 队列数据模型与展示辅助（与 React 无关，便于复用与推理）。 */
 import type { CipherName, CoverImage, KeyLookupInfo, KeySource, TrackMeta } from '../core/types';
 
-export type ItemStatus = 'pending' | 'running' | 'need-key' | 'done' | 'failed' | 'cancelled';
+export type ItemStatus = 'pending' | 'running' | 'converting' | 'need-key' | 'done' | 'failed' | 'cancelled';
 
 export interface QueueItem {
   id: string;
@@ -51,6 +51,10 @@ export function statusLabel(item: QueueItem): string {
       return item.progress > 0 && item.progress < 1
         ? `解密中 ${Math.round(item.progress * 100)}%`
         : '解析中';
+    case 'converting':
+      return item.progress > 0 && item.progress < 1
+        ? `转 MP3 ${Math.round(item.progress * 100)}%`
+        : '转 MP3…';
     case 'need-key':
       return '需要密钥';
     case 'done':

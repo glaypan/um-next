@@ -3,6 +3,7 @@ import DropZone from './ui/DropZone';
 import FileRow from './ui/FileRow';
 import FormatHelp, { FormatTable } from './ui/FormatHelp';
 import KeyDialog from './ui/KeyDialog';
+import KeyGuide from './ui/KeyGuide';
 import VaultPanel from './ui/VaultPanel';
 import FolderImport, { type MatchedKeyRecord } from './ui/FolderImport';
 import { mimeForExt } from './core/audio';
@@ -24,8 +25,10 @@ import {
   type QueueItem,
 } from './store/queue';
 import { DecryptAbortError, decryptClient } from './worker/client';
+import { transcodeClient } from './worker/transcodeClient';
 
 const THEME_KEY = 'um-next:theme';
+const OGG_TO_MP3_KEY = 'um-next:ogg-to-mp3';
 type Theme = 'light' | 'dark';
 
 /**
@@ -67,9 +70,17 @@ export default function App() {
   const [queue, setQueue] = useState<QueueItem[]>([]);
   const [vault, setVault] = useState<VaultData>(() => loadVault());
   const [theme, setTheme] = useState<Theme>(initialTheme);
+  const [oggToMp3, setOggToMp3] = useState<boolean>(() => {
+    try {
+      return globalThis.localStorage?.getItem(OGG_TO_MP3_KEY) !== '0';
+    } catch {
+      return true;
+    }
+  });
   const [formatOpen, setFormatOpen] = useState(false);
   const [vaultOpen, setVaultOpen] = useState(false);
   const [folderImportOpen, setFolderImportOpen] = useState(false);
+  const [keyGuideOpen, setKeyGuideOpen] = useState(false);
   const [keyDialogId, setKeyDialogId] = useState<string | null>(null);
   const [keyError, setKeyError] = useState('');
   /** 状态变化后踢一下调度 effect，避免「正在运行」标志与批处理打架。 */
@@ -78,6 +89,7 @@ export default function App() {
   const [memoryRejected, setMemoryRejected] = useState(0);
 
   const runningRef = useRef(false);
+  const oggToMp3Ref = useRef(oggToMp3);
   const vaultRef = useRef(vault);
   const manualKeys = useRef(new Map<string, { ekey: string; remember: boolean }>());
   /** 用户主动关掉过弹窗的条目，避免下一次状态变化又弹出来。 */
@@ -89,6 +101,15 @@ export default function App() {
     vaultRef.current = vault;
     saveVault(vault);
   }, [vault]);
+
+  useEffect(() => {
+    oggToMp3Ref.current = oggToMp3;
+    try {
+      globalThis.localStorage?.setItem(OGG_TO_MP3_KEY, oggToMp3 ? '1' : '0');
+    } catch {
+      /* 忽略 */
+    }
+  }, [oggToMp3]);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -172,7 +193,7 @@ export default function App() {
     async (item: QueueItem, token: number, manualEkey?: string, remember = false) => {
       patch(item.id, { status: 'running', progress: 0, message: undefined });
       try {
-        const outcome = await decryptClient.decrypt(item.file, {
+        let outcome = await decryptClient.decrypt(item.file, {
           fileName: item.name,
           ekey: manualEkey,
           vault: toVaultSnapshot(vaultRef.current),
@@ -182,6 +203,33 @@ export default function App() {
         });
         // 迟到的结果（已取消 / 已被新一轮取代）一律丢弃，绝不覆盖新状态
         if (runToken.current !== token) return;
+
+        // OGG → MP3：只在开关打开且确实解出 OGG 时执行；失败保留 OGG，不阻断主流程
+        if (outcome.status === 'ok' && outcome.ext === 'ogg' && oggToMp3Ref.current) {
+          patch(item.id, { status: 'converting', progress: 0, message: undefined });
+          try {
+            const mp3 = await transcodeClient.run(outcome.data, (ratio) => {
+              if (runToken.current === token) patch(item.id, { progress: ratio });
+            });
+            if (runToken.current !== token) return;
+            outcome = {
+              ...outcome,
+              data: mp3.data,
+              ext: 'mp3',
+              warnings: [...(outcome.warnings ?? []), `已将 OGG 转为 MP3（${mp3.bitrate} kbps）`],
+            };
+          } catch (error) {
+            if (runToken.current !== token) return;
+            outcome = {
+              ...outcome,
+              warnings: [
+                ...(outcome.warnings ?? []),
+                `转 MP3 失败，已保留 OGG：${error instanceof Error ? error.message : String(error)}`,
+              ],
+            };
+          }
+        }
+
         applyOutcome(item, outcome, manualEkey, remember);
       } catch (error) {
         if (runToken.current !== token) return;
@@ -219,7 +267,7 @@ export default function App() {
   // 补密钥弹窗调度：只要还有「需要密钥」且没被用户关掉的条目，就弹出来
   useEffect(() => {
     // 自动导入弹窗打开时不要再把补密钥弹窗叠在下面（两个 modal 叠层会互相遮挡）
-    if (keyDialogId !== null || folderImportOpen) return;
+    if (keyDialogId !== null || folderImportOpen || keyGuideOpen) return;
     const next = queue.find(
       (item) => item.status === 'need-key' && !dismissedKeyPrompt.current.has(item.id),
     );
@@ -227,7 +275,7 @@ export default function App() {
       setKeyError('');
       setKeyDialogId(next.id);
     }
-  }, [queue, keyDialogId, folderImportOpen]);
+  }, [queue, keyDialogId, folderImportOpen, keyGuideOpen]);
 
   const addFiles = useCallback((files: File[]) => {
     if (files.length === 0) return;
@@ -243,6 +291,7 @@ export default function App() {
   const handleCancel = useCallback(
     (item: QueueItem) => {
       decryptClient.cancel();
+      transcodeClient.cancel();
       runToken.current += 1;
       runningRef.current = false;
       patch(item.id, { status: 'cancelled', progress: 0, message: '已取消' });
@@ -253,8 +302,9 @@ export default function App() {
 
   const handleRemove = useCallback(
     (item: QueueItem) => {
-      if (item.status === 'running') {
+      if (item.status === 'running' || item.status === 'converting') {
         decryptClient.cancel();
+        transcodeClient.cancel();
         runToken.current += 1;
         runningRef.current = false;
         setTick((value) => value + 1);
@@ -359,7 +409,7 @@ export default function App() {
   }, [doneItems, downloadItem]);
 
   const keyDialogItem = queue.find((item) => item.id === keyDialogId) ?? null;
-  const busy = queue.some((item) => item.status === 'running');
+  const busy = queue.some((item) => item.status === 'running' || item.status === 'converting');
 
   return (
     <div className="app">
@@ -369,8 +419,19 @@ export default function App() {
           <p className="header__subtitle">支持 QQ 音乐 MusicEx/STag · 网易云 NCM 3.x</p>
         </div>
         <div className="header__actions">
+          <label className="checkbox checkbox--toolbar" title="解密出的 OGG 自动转换为 MP3（320 kbps）">
+            <input
+              type="checkbox"
+              checked={oggToMp3}
+              onChange={(event) => setOggToMp3(event.target.checked)}
+            />
+            OGG 转 MP3
+          </label>
           <button type="button" className="btn btn--small" onClick={() => setFormatOpen(true)}>
             格式说明
+          </button>
+          <button type="button" className="btn btn--small" onClick={() => setKeyGuideOpen(true)}>
+            密钥说明
           </button>
           <button
             type="button"
@@ -439,6 +500,7 @@ export default function App() {
                   onClick={() => {
                     if (busy) {
                       decryptClient.cancel();
+                      transcodeClient.cancel();
                       runToken.current += 1;
                       runningRef.current = false;
                     }
@@ -457,6 +519,7 @@ export default function App() {
                   onClick={() => {
                     if (busy) {
                       decryptClient.cancel();
+                      transcodeClient.cancel();
                       runToken.current += 1;
                       runningRef.current = false;
                     }
@@ -518,6 +581,16 @@ export default function App() {
           setKeyError('');
           setFolderImportOpen(true);
         }}
+        onShowKeyGuide={() => {
+          setKeyDialogId(null);
+          setKeyError('');
+          setKeyGuideOpen(true);
+        }}
+      />
+      <KeyGuide
+        open={keyGuideOpen}
+        onClose={() => setKeyGuideOpen(false)}
+        onAutoImport={() => setFolderImportOpen(true)}
       />
       <FolderImport
         open={folderImportOpen}

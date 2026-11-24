@@ -71,14 +71,14 @@ export default function FileRow({
           ) : null}
         </div>
 
-        {item.status === 'running' ? (
+        {item.status === 'running' || item.status === 'converting' ? (
           <div
             className="progress"
             role="progressbar"
             aria-valuemin={0}
             aria-valuemax={100}
             aria-valuenow={percent}
-            aria-label={`${item.name} 解密进度`}
+            aria-label={`${item.name} 处理进度`}
           >
             <div className="progress__bar" style={{ width: `${percent}%` }} />
           </div>
@@ -114,7 +114,7 @@ export default function FileRow({
             重试
           </button>
         ) : null}
-        {item.status === 'running' ? (
+        {item.status === 'running' || item.status === 'converting' ? (
           <button type="button" className="btn" onClick={() => onCancel(item)}>
             取消
           </button>

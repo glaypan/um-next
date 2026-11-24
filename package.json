@@ -1,7 +1,7 @@
 {
   "name": "um-next",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "description": "UM Next · 本地音乐解锁（QQ 音乐 QMC / 网易云 NCM），纯前端离线解密",
   "scripts": {
@@ -14,6 +14,8 @@
     "samples": "node scripts/make-samples.mjs"
   },
   "dependencies": {
+    "@breezystack/lamejs": "^1.2.7",
+    "@wasm-audio-decoders/ogg-vorbis": "^0.1.20",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

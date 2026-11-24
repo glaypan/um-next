@@ -4,7 +4,7 @@
  * 运行：node scripts/make-samples.mjs
  * 输出：`.tmp/samples/*`，并在控制台打印配套的 ekey。
  */
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { aes128EcbEncryptPkcs7 } from '../src/core/aes128';
 import {
@@ -146,3 +146,17 @@ writeFileSync(path.join(outDir, 'plain-sample.flac'), audio);
 console.log(`样本已生成：${outDir}`);
 console.log(`配套 ekey（MusicEx / STag 用）：\n${SAMPLE_EKEY}`);
 console.log(`明文音频参考长度：${audio.length} 字节（首字节序列 fLaC）`);
+
+// 7) QMC2 + QTag 尾部，但内容是真正的 OGG Vorbis（用于验证自动转 MP3）
+{
+  const ogg = new Uint8Array(readFileSync(path.resolve('tests/fixtures/sample-tone.ogg')));
+  const key = decryptEkey(SAMPLE_EKEY);
+  const cipher = createQmc2Cipher(key);
+  const enc = ogg.slice();
+  cipher.decrypt(enc, 0);
+  const csv = latin1Encode(`${SAMPLE_EKEY},326454302,2`);
+  const len = new Uint8Array(4);
+  writeU32BE(len, 0, csv.length);
+  writeFileSync(path.join(outDir, 'qtag-ogg.mgg'), concatBytes(enc, csv, len, latin1Encode('QTag')));
+  writeFileSync(path.join(outDir, 'plain-ogg.ogg'), ogg);
+}

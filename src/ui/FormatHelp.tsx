@@ -91,6 +91,10 @@ export default function FormatHelp({ open, onClose }: FormatHelpProps) {
           如果文件属于 MusicEx / STag，密钥不在文件里，需要你提供购买时获得的 ekey。本工具不提供
           密钥、不绕过任何账号或版权校验，只做「本地把已下载的文件转回可播放音频」。
         </p>
+        <p className="modal__desc">
+          OGG Vorbis（.ogg / .qmcogg / .mgg）可在顶栏勾选「OGG 转 MP3」：内置 libvorbis 解码 + LAME 编码，
+          直接输出 320 kbps MP3（Worker 内完成，不联网）；转换失败会自动保留原始 OGG。
+        </p>
         <div className="modal__actions">
           <button type="button" className="btn btn--primary" onClick={onClose}>
             知道了

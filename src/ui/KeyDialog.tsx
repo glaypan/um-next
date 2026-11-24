@@ -9,13 +9,23 @@ interface KeyDialogProps {
   onSubmit: (ekey: string, remember: boolean) => void;
   /** 打开「从文件夹自动导入」，省去手动找 key。 */
   onAutoImport?: () => void;
+  /** 打开各平台密钥获取说明。 */
+  onShowKeyGuide?: () => void;
 }
 
 /**
  * 补 ekey 弹窗。展示 media_filename / mid / resource_id，方便用户对上号；
  * 勾选「记住」后成功后写入保险库（失败的密钥不会被记录）。
  */
-export default function KeyDialog({ open, item, error, onClose, onSubmit, onAutoImport }: KeyDialogProps) {
+export default function KeyDialog({
+  open,
+  item,
+  error,
+  onClose,
+  onSubmit,
+  onAutoImport,
+  onShowKeyGuide,
+}: KeyDialogProps) {
   const [value, setValue] = useState('');
   const [remember, setRemember] = useState(true);
   const [pasteHint, setPasteHint] = useState('');
@@ -119,6 +129,12 @@ export default function KeyDialog({ open, item, error, onClose, onSubmit, onAuto
             onChange={(event) => setValue(event.target.value)}
           />
         </label>
+
+        {onShowKeyGuide ? (
+          <p className="hint">
+            不知道去哪里找？<button type="button" className="link-button" onClick={onShowKeyGuide}>查看各平台密钥获取方式</button>
+          </p>
+        ) : null}
 
         <div className="modal__row">
           <button type="button" className="btn btn--small" onClick={pasteFromClipboard}>

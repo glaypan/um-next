@@ -77,6 +77,16 @@ const PLAN = [
     note: 'STag 尾部只带 resourceId/mediaMid，必须补 ekey 或走保险库',
   },
   {
+    from: 'qtag-ogg.mgg',
+    to: 'sample-qmc-ogg.mgg',
+    cipher: 'QMC2/Map',
+    ext: 'ogg',
+    needsEkey: false,
+    ekeyFile: null,
+    plaintextFrom: 'plain-ogg.ogg',
+    note: 'QTag 内嵌 ekey 的真实 OGG Vorbis，用于验证自动转 MP3',
+  },
+  {
     from: 'plain-sample.flac',
     to: 'sample-plain.flac',
     cipher: 'AUDIO',
@@ -100,9 +110,10 @@ const sha256 = (file) => createHash('sha256').update(readFileSync(file)).digest(
 
 mkdirSync(outDir, { recursive: true });
 
-// 所有样本共用同一段明文音频 → 明文 sha256 直接取自 plain-sample.flac
-const plaintextSha256 = sha256(path.join(srcDir, 'plain-sample.flac'));
-const plaintextSize = readFileSync(path.join(srcDir, 'plain-sample.flac')).length;
+// 多数样本共用同一段假 FLAC；OGG 样本单独取自己的明文 OGG
+const defaultPlainFile = path.join(srcDir, 'plain-sample.flac');
+const plaintextSha256 = sha256(defaultPlainFile);
+const plaintextSize = readFileSync(defaultPlainFile).length;
 
 /** @type {any[]} */
 const manifest = [];
@@ -115,10 +126,11 @@ for (const item of PLAN) {
     writeFileSync(path.join(outDir, item.ekeyFile), `${SAMPLE_EKEY}\n`, 'utf8');
   }
 
+  const plainFile = item.plaintextFrom ? path.join(srcDir, item.plaintextFrom) : defaultPlainFile;
   manifest.push({
     file: item.to,
     // 解密后明文音频的 sha256（E2E 用它断言下载结果）
-    sha256: plaintextSha256,
+    sha256: sha256(plainFile),
     ext: item.ext,
     needsEkey: item.needsEkey,
     ekeyFile: item.ekeyFile,
@@ -126,7 +138,7 @@ for (const item of PLAN) {
     // 以下为附加字段（便于定位问题、校验 fixtures 完整性）
     fileSha256: sha256(dst),
     size: readFileSync(dst).length,
-    plaintextSize,
+    plaintextSize: readFileSync(plainFile).length,
     note: item.note,
   });
 }

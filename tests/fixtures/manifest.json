@@ -60,6 +60,18 @@
     "note": "STag 尾部只带 resourceId/mediaMid，必须补 ekey 或走保险库"
   },
   {
+    "file": "sample-qmc-ogg.mgg",
+    "sha256": "3f51302a146ff51e10370ae4e93ffd2eafd2ba72a8aea0b56c5e6df2cc922c71",
+    "ext": "ogg",
+    "needsEkey": false,
+    "ekeyFile": null,
+    "cipher": "QMC2/Map",
+    "fileSha256": "5329c945c0d1dac6e423c61743237ad98c2f0d3b12646ff42af6366759ec5d99",
+    "size": 17905,
+    "plaintextSize": 17809,
+    "note": "QTag 内嵌 ekey 的真实 OGG Vorbis，用于验证自动转 MP3"
+  },
+  {
     "file": "sample-plain.flac",
     "sha256": "7bbf99bf29325a0e58b7ba308bb1aa654ae0956ede4ea8e1a7025a955cddf0cc",
     "ext": "flac",
